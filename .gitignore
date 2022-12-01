@@ -38,6 +38,7 @@ build/.cmake/
 *.rej
 
 newworld/
+!newworld/world.mt
 ## Non-static Minetest directories or symlinks to these
 /bin/
 /games/*
