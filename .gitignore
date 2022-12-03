@@ -37,8 +37,15 @@ build/.cmake/
 # GNU Patch reject file
 *.rej
 
+# Protobuf
+**/*.pb.cc
+**/*.pb.h
+**/*_pb2.py
+
+# Python
+**/__pycache__/
+
 newworld/
-!newworld/world.mt
 ## Non-static Minetest directories or symlinks to these
 /bin/
 /games/*
@@ -54,6 +61,8 @@ newworld/
 /mods/minetest/*
 !/mods/minetest/mods_here.txt
 !/mods/mods_here.txt
+!/mods/rewards
+!/newworld/minetest.conf
 /worlds
 /world/
 /clientmods/*

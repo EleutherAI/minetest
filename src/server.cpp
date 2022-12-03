@@ -3984,9 +3984,11 @@ void Server::broadcastModChannelMessage(const std::string &channel,
 	resp_pkt << channel << sender << message;
 	for (session_t peer_id : peers) {
 		// Ignore sender
+		errorstream << "I WANT SEND PACKET"  << std::endl;
 		if (peer_id == from_peer)
 			continue;
 
+		errorstream << "I SEND PACKET"  << std::endl;
 		Send(peer_id, &resp_pkt);
 	}
 

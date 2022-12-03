@@ -1668,7 +1668,6 @@ void Client::handleCommand_ModChannelSignal(NetworkPacket *pkt)
 	std::string channel;
 
 	*pkt >> signal_tmp >> channel;
-
 	signal = (ModChannelSignal)signal_tmp;
 
 	bool valid_signal = true;
