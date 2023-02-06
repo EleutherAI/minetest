@@ -5,10 +5,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN <<EOF
 # build SDL2
-# define installation directory
-mkdir SDL2
-export SDL2_INSTALLATION=/SDL2
-# clone SDL
+set -ex # display used commands and exit if any of the lines fail
+sed -i -e 's#http://archive.ubuntu.com/ubuntu#http://mirror.enzu.com/ubuntu/#' /etc/apt/sources.list # change mirror because the default one is dying on me
 apt-get update -y
 apt install -y git build-essential
 if [ -n "$ENABLE_SDL2" ];then
@@ -42,6 +40,7 @@ EOF
 
 RUN <<EOF
 # build minetest
+set -ex
 # install dependencies
 apt-get update -y
 apt install -y libzmqpp-dev libgmp3-dev protobuf-compiler libprotobuf-dev libzstd-dev libfreetype-dev libsqlite3-dev
@@ -68,6 +67,7 @@ EOF
 
 RUN <<EOF
 # Install Python packages and Xvfb
+set -ex
 apt-get install -y python3 python3-pip xvfb
 pip install numpy matplotlib gym zmq protobuf
 EOF
