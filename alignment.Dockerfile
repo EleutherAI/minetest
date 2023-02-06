@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:focal
+ARG ENABLE_SDL2
 ENV DEBIAN_FRONTEND=noninteractive
+
 RUN <<EOF
 # build SDL2
 # define installation directory
@@ -9,9 +11,16 @@ export SDL2_INSTALLATION=/SDL2
 # clone SDL
 apt-get update -y
 apt install -y git build-essential
-git clone https://github.com/libsdl-org/SDL.git -b SDL2 && cd SDL && git checkout tags/release-2.26.2
-# build
-mkdir build && cd build && ../configure --prefix=$SDL2_INSTALLATION --enable-video-offscreen && make && make install
+if [ -n "$ENABLE_SDL2" ];then
+	# build SDL2
+	# define installation directory
+	mkdir SDL2
+	# clone SDL
+	git clone https://github.com/libsdl-org/SDL.git -b SDL2 && cd SDL && git checkout tags/release-2.26.2
+	# build
+	mkdir build && cd build
+	../configure --prefix=/SDL2 --enable-video-offscreen && make && make install
+fi
 EOF
 
 RUN <<EOF
@@ -22,9 +31,12 @@ apt install -y zlib1g-dev libjpeg-dev libpng-dev libxi-dev cmake
 # clone irrlicht
 git clone https://github.com/EleutherAI/irrlicht && cd irrlicht && git checkout disable-x11
 # define lib paths
-export SDL2_INSTALLATION=/SDL2
+if [ -n "$ENABLE_SDL2" ];then
+	cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_HEADLESS=1 -DSDL2_DIR=/SDL2/lib/cmake/SDL2
+else
+	cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_HEADLESS=1
+fi
 # build
-cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_HEADLESS=1 -DSDL2_DIR=$SDL2_INSTALLATION/lib/cmake/SDL2
 make -j8
 EOF
 
@@ -46,8 +58,11 @@ cd ..
 export SDL2_INSTALLATION=/SDL2
 export IRRLICHT_REPO=/irrlicht
 # build
-cd minetest
-cmake . -B build_headless_render -DCMAKE_BUILD_TYPE=Debug -DSDL2_DIR=$SDL2_INSTALLATION/lib/cmake/SDL2 -DIRRLICHTMT_BUILD_DIR=$IRRLICHT_REPO -DBUILD_HEADLESS=1 -DENABLE_SOUND=OFF -DRUN_IN_PLACE=1
+if [ -n "$ENABLE_SDL2" ];then
+	cmake . -B build_headless_render -DCMAKE_BUILD_TYPE=Debug -DSDL2_DIR=/SDL2/lib/cmake/SDL2 -DIRRLICHTMT_BUILD_DIR=$IRRLICHT_REPO -DBUILD_HEADLESS=1 -DENABLE_SOUND=OFF -DRUN_IN_PLACE=1
+else
+	cmake . -B build_headless_render -DCMAKE_BUILD_TYPE=Debug -DIRRLICHTMT_BUILD_DIR=$IRRLICHT_REPO -DBUILD_HEADLESS=1 -DENABLE_SOUND=OFF -DRUN_IN_PLACE=1
+fi
 cmake --build build_headless_render
 EOF
 
