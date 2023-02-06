@@ -23,11 +23,12 @@ EOF
 
 RUN <<EOF
 # build Irrlicht
+set -ex
 # install missing dependency
 apt-get update -y
-apt install -y zlib1g-dev libjpeg-dev libpng-dev libxi-dev cmake
+apt install -y zlib1g-dev libjpeg-dev libpng-dev libxi-dev cmake libglu1-mesa-dev freeglut3-dev mesa-common-dev
 # clone irrlicht
-git clone https://github.com/EleutherAI/irrlicht && cd irrlicht && git checkout disable-x11
+git clone https://github.com/EleutherAI/irrlicht && cd irrlicht
 # define lib paths
 if [ -n "$ENABLE_SDL2" ];then
 	cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_HEADLESS=1 -DSDL2_DIR=/SDL2/lib/cmake/SDL2
@@ -48,13 +49,12 @@ apt install -y libzmqpp-dev libgmp3-dev protobuf-compiler libprotobuf-dev libzst
 git clone https://github.com/EleutherAI/minetest
 git clone --depth 1 https://github.com/minetest/minetest_game.git minetest/games/minetest_game
 cd minetest
-git checkout cmake-SDL2-target-fix
+git checkout develop
 # compile protobuf
 cd hacking_testing
 ./compile_proto.sh
 cd ..
 # define lib paths
-export SDL2_INSTALLATION=/SDL2
 export IRRLICHT_REPO=/irrlicht
 # build
 if [ -n "$ENABLE_SDL2" ];then
