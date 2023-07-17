@@ -15,7 +15,8 @@ class DataRecorder:
         max_queue_length: int = 1200,
         max_attempts: int = 10,
         debug: bool = False,
-        subsample_rate: int = 1,  # new argument for subsampling rate
+        subsample_rate: float = 0.1,  # time in seconds between recorded frames
+        frame_shape = (512,300)
     ):
         self.target_address = target_address
         self.data_path = data_path
@@ -23,7 +24,8 @@ class DataRecorder:
         self.max_queue_length = max_queue_length
         self.max_attempts = max_attempts
         self.debug = debug
-        self.subsample_rate = subsample_rate  # subsampling rate
+        self.subsample_rate = subsample_rate  # time between frames to record
+        self.frame_shape = frame_shape
         self._recording = False
 
         # Setup ZMQ
@@ -50,13 +52,13 @@ class DataRecorder:
 
         # Initialize video writer
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.video_writer = cv2.VideoWriter(self.video_path, self.fourcc, 20.0, (1024, 600))
+        self.video_writer = cv2.VideoWriter(self.video_path, self.fourcc, 1/self.subsample_rate, frame_shape)
 
     def start(self):
         with open(self.action_log_path, "w") as action_log:
             self._recording = True
             num_attempts = 0
-            frame_count = 0  # count frames for subsampling
+            next_frame_time = time.time()  # time for the next frame to record
 
             while self._recording:
                 try:
@@ -64,8 +66,8 @@ class DataRecorder:
                     raw_data = self.socket.recv()
                     num_attempts = 0
 
-                    # Subsample based on the specified rate
-                    if frame_count % self.subsample_rate == 0:
+                    # Check if it's time to record a frame
+                    if time.time() >= next_frame_time:
                         obs, rew, terminal, info, action = unpack_pb_obs(raw_data)
 
                         if self.debug:
@@ -77,12 +79,15 @@ class DataRecorder:
                             print(f"action={action_str}, rew={rew}, T?={terminal}")
 
                         # Write frame to video
-                        self.video_writer.write(cv2.cvtColor(np.array(obs), cv2.COLOR_RGB2BGR))
+                        resized_frame = cv2.resize(np.array(obs), self.frame_shape)
+                        self.video_writer.write(cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR))
 
                         # Write action to action log (one line per frame)
                         action_log.write(json.dumps(action) + "\n")
 
-                    frame_count += 1
+                        # Update time for the next frame
+                        next_frame_time += self.subsample_rate
+
                 except zmq.ZMQError as err:
                     if err.errno == zmq.EAGAIN:
                         print(f"Reception attempts: {num_attempts}")
