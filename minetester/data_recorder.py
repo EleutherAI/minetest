@@ -1,5 +1,4 @@
 import os
-
 import zmq
 from minetester.utils import unpack_pb_obs
 
@@ -50,7 +49,8 @@ class DataRecorder:
                     num_attempts = 0
 
                     if self.debug:
-                        _, rew, terminal, _, action = unpack_pb_obs(raw_data)
+                        obs, rew, terminal, info, action = unpack_pb_obs(raw_data)
+                        print(obs, type(obs))
                         action_str = ""
                         for key in action.keys():
                             if key != "MOUSE" and action[key]:
@@ -59,6 +59,8 @@ class DataRecorder:
 
                     # Write data to new line
                     if not self.debug:
+                        obs, rew, terminal, info, action = unpack_pb_obs(raw_data)
+                        print(obs, type(obs))
                         out.write(str(raw_data) + "\n")
                 except zmq.ZMQError as err:
                     if err.errno == zmq.EAGAIN:
@@ -73,12 +75,3 @@ class DataRecorder:
 
     def stop(self):
         self._recording = False
-
-
-if __name__ == "__main__":
-    debug = True  # if True, data is not written
-    address = "localhost:5555"
-    data_dir = "data.bin"
-    num_attempts = 10
-    recorder = DataRecorder(data_dir, address, max_attempts=num_attempts, debug=debug)
-    recorder.start()  # warning: file quickly grows very large
