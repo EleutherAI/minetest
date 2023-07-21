@@ -1,0 +1,2 @@
+cd lib/zmqpp
+make

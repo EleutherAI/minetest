@@ -223,7 +223,7 @@ if(ENABLE_PROTOBUF)
 		get_filename_component(directory ${file} DIRECTORY)
 		get_filename_component(truename ${directory}/${basename} ABSOLUTE)
 		file(RELATIVE_PATH relname ${PROTO_PARENT}/proto ${truename})
-		set(outnames ${PROJECT_SOURCE_DIR}/${relname}.pb.h ${PROJECT_SOURCE_DIR}/${relname}.pb.cc)
+		set(outnames ${CMAKE_CURRENT_BINARY_DIR}/${relname}.pb.h ${CMAKE_CURRENT_BINARY_DIR}/${relname}.pb.cc)
 		add_custom_command(OUTPUT ${outnames}
 						COMMAND protobuf::protoc
 						ARGS --cpp_out=. --proto_path ${PROTO_PARENT}/proto ${file}
@@ -496,7 +496,6 @@ endif(BUILD_CLIENT)
 
 set(client_SRCS
 	${client_SRCS}
-	${proto_targets}
 	${common_SRCS}
 	${gui_SRCS}
 	${client_network_SRCS}
@@ -523,9 +522,15 @@ list(SORT server_SRCS)
 # Avoid source_group on broken CMake version.
 # see issue #7074 #7075
 if (CMAKE_VERSION VERSION_GREATER 3.8.1)
+	source_group(TREE ${CMAKE_CURRENT_BINARY_DIR} PREFIX "ProtoBuf Source Files" FILES ${proto_targets})
 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${client_SRCS})
 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${server_SRCS})
 endif()
+
+set(client_SRCS
+	${client_SRCS}
+	${proto_targets}
+)
 
 include_directories(
 	${PROJECT_BINARY_DIR}

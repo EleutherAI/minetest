@@ -6,3 +6,9 @@
 [submodule "lib/zmqpp"]
 	path = lib/zmqpp
 	url = git@github.com:zeromq/zmqpp.git
+[submodule "games/minetest_game"]
+	path = games/minetest_game
+	url = git@github.com:minetest/minetest_game.git
+[submodule "lib/SDL"]
+	path = lib/SDL
+	url = git@github.com:libsdl-org/SDL.git

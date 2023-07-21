@@ -5,7 +5,7 @@ import shutil
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
 import zmq

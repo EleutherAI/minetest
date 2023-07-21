@@ -54,6 +54,7 @@ newworld/
 ## Non-static Minetest directories or symlinks to these
 /bin/
 /games/*
+!/games/minetest_game/
 !/games/devtest/
 /cache
 /textures/*
@@ -102,7 +103,6 @@ doc/mkdocs/mkdocs.yml
 build/
 build_headless/
 CMakeFiles
-Makefile
 cmake_install.cmake
 CMakeCache.txt
 CPackConfig.cmake
