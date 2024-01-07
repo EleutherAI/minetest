@@ -1,5 +1,15 @@
 from setuptools import setup, find_packages
 
+DEV = ["pre-commit", "black", "isort", "flake8"]
+DOCS = [
+    "sphinx==6.2.1",
+    "sphinx_rtd_theme==1.2.2",
+    "sphinx-autobuild",
+    "sphinx_autodoc_typehints",
+    "sphinx_copybutton",
+    "myst_parser",
+]
+
 setup(
     name='minetester',
     version='0.0.1',
@@ -16,6 +26,7 @@ setup(
         'psutil',
         'patchelf',
     ],
+    extras_require={"dev": DEV, "docs": DOCS},
     package_data={
         'minetester': [
              'minetest/bin/minetest',
