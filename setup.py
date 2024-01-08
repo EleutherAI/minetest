@@ -8,6 +8,7 @@ setup(
     author_email='',
     packages=find_packages(),
     install_requires=[
+        'opencv-python',
         'gymnasium',
         'numpy',
         'matplotlib',

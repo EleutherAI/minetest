@@ -14,16 +14,21 @@ The environment will eventually provide 4 modes of operation for players and age
 Minetester
 ==========
 Minetester is the Python package that exposes Minetest environments via the `gym(nasium)` interface.
-After [building the minetest executable](https://github.com/EleutherAI/minetest/blob/develop/build_instructions.txt) you can install it with:
-```
-pip install -e .
-```
-To verify the installation run
+
+The library provides the minetester environment you can inspect the [test loop](https://github.com/EleutherAI/minetest/blob/develop/minetester/scripts/test_loop.py) to see how to run the environment.
+
+This script can be run with:
 ```
 python -m minetester.scripts.test_loop
 ```
 
-Quick Build Instructions for Linux
+The installation also provides a script for recording the game with:
+
+```
+python -m minetester.scripts.record_game --data_dir <recording_directory>
+```
+
+Quick Build Instructions for Ubuntu 20/22.04 and x86
 ==================================
 
 Run these make commands in order to build and install minetester. 
@@ -51,6 +56,11 @@ make minetester #build minetester python library
 make install #install python library into local environment along with nessesary dependencies
 make demo #run the demo script
 ```
+
+Note: it is possible to run these instructions with ubuntu 20.04, with the following modifications due to the reliance on [auditwheel](https://github.com/pypa/auditwheel)
+
+ - patchelf must be installed using something other than the package manager. The conda-forge distribution seems to work well.
+ - by default `make minetester` and `make install` assume  `manylinux_2_35_x86_64` will work, this must be downgraded to `manylinux_2_31_x86_64`
 
 Minetest
 ========
