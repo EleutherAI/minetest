@@ -1,8 +1,10 @@
+"""Utility functions for Minetester."""
 import os
 import subprocess
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
+
 from minetester.proto import objects_pb2 as pb_objects
 from minetester.proto.objects_pb2 import KeyType
 
@@ -37,7 +39,21 @@ NOOP_ACTION = {key: 0 for key in KEY_MAP.keys()}
 NOOP_ACTION.update({"MOUSE": np.zeros(2, dtype=int)})
 
 
-def unpack_pb_obs(received_obs: str):
+def unpack_pb_obs(
+    received_obs: str,
+) -> Tuple[np.ndarray, float, bool, Dict[str, Any], Dict[str, int]]:
+    """Unpack a protobuf observation received from Minetest client.
+
+    Note: here 'observation' encompasses all information received from the client
+    within one step and should not be confused with the observation
+    returned by a gym environment.
+
+    Args:
+        received_obs: The received observation.
+
+    Returns:
+        The displayed image, task reward, done flag, info dict and last action.
+    """
     pb_obs = pb_objects.Observation()
     pb_obs.ParseFromString(received_obs)
     obs = np.frombuffer(pb_obs.image.data, dtype=np.uint8).reshape(
@@ -52,7 +68,15 @@ def unpack_pb_obs(received_obs: str):
     return obs, rew, done, info, last_action
 
 
-def unpack_pb_action(pb_action: pb_objects.Action):
+def unpack_pb_action(pb_action: pb_objects.Action) -> Dict[str, int]:
+    """Unpack a protobuf action.
+
+    Args:
+        pb_action: The protobuf action.
+
+    Returns:
+        The unpacked action as dictionary.
+    """
     action = dict(NOOP_ACTION)
     action["MOUSE"] = [pb_action.mouseDx, pb_action.mouseDy]
     for key_event in pb_action.keyEvents:
@@ -62,7 +86,15 @@ def unpack_pb_action(pb_action: pb_objects.Action):
     return action
 
 
-def pack_pb_action(action: Dict[str, Any]):
+def pack_pb_action(action: Dict[str, Any]) -> pb_objects.Action:
+    """Pack a protobuf action.
+
+    Args:
+        action: The action as dictionary.
+
+    Returns:
+        The packed protobuf action.
+    """
     pb_action = pb_objects.Action()
     pb_action.mouseDx, pb_action.mouseDy = action["MOUSE"]
     for key, v in action.items():
@@ -78,15 +110,30 @@ def pack_pb_action(action: Dict[str, Any]):
 
 
 def start_minetest_server(
-    minetest_path: str,
-    config_path: str,
-    log_path: str,
-    server_port: int,
-    world_dir: str,
-    sync_port: int,
-    sync_dtime: float,
-    game_id: str,
-):
+    minetest_path: str = "bin/minetest",
+    config_path: str = "minetest.conf",
+    log_path: str = "log/{}.log",
+    server_port: int = 30000,
+    world_dir: str = "newworld",
+    sync_port: int = None,
+    sync_dtime: float = 0.001,
+    game_id: str = "minetest",
+) -> subprocess.Popen:
+    """Start a Minetest server.
+
+    Args:
+        minetest_path: Path to the Minetest executable.
+        config_path: Path to the minetest.conf file.
+        log_path: Path to the log files.
+        server_port: Port of the server.
+        world_dir: Path to the world directory.
+        sync_port: Port for the synchronization with the server.
+        sync_dtime: In-game time between two steps.
+        game_id: Game ID of the game to be used.
+
+    Returns:
+        The server process.
+    """
     cmd = [
         minetest_path,
         "--server",
@@ -120,12 +167,33 @@ def start_minetest_client(
     client_name: str,
     media_cache_dir: str,
     sync_port: Optional[int] = None,
-    dtime : Optional[float] = None,
+    dtime: Optional[float] = None,
     headless: bool = False,
     display: Optional[int] = None,
     set_gpu_vars: bool = True,
     set_vsync_vars: bool = True,
-):
+) -> subprocess.Popen:
+    """Start a Minetest client.
+
+    Args:
+        minetest_path: Path to the Minetest executable.
+        config_path: Path to the minetest.conf file.
+        log_path: Path to the log files.
+        client_port: Port of the client.
+        server_port: Port of the server to connect to.
+        cursor_img: Path to the cursor image.
+        client_name: Name of the client.
+        media_cache_dir: Directory of minetest's media cache.
+        sync_port: Port for the synchronization with the server.
+        dtime: In-game time step in seconds.
+        headless: Whether to run the client in headless mode.
+        display: value of the DISPLAY variable.
+        set_gpu_vars: whether to enable Nvidia GPU usage
+        set_vsync_vars: whether to disable Vsync
+
+    Returns:
+        The client process.
+    """
     cmd = [
         minetest_path,
         "--name",
@@ -179,7 +247,17 @@ def start_xserver(
     display_idx: int = 1,
     display_size: Tuple[int, int] = (1024, 600),
     display_depth: int = 24,
-):
+) -> subprocess.Popen:
+    """Start a virtual framebuffer X server.
+
+    Args:
+        display_idx: Value of the DISPLAY variable.
+        display_size: Size of the display.
+        display_depth: Depth of the display.
+
+    Returns:
+        The X server process.
+    """
     cmd = [
         "Xvfb",
         f":{display_idx}",
@@ -191,28 +269,43 @@ def start_xserver(
     return xserver_process
 
 
-def read_config_file(file_path):
+def read_config_file(file_path: os.PathLike):
+    """Read and parse minetest config files.
+
+    Args:
+        file_path: Path to minetest config.
+
+    Returns:
+        dictionary containing the parsed config.
+    """
     config = {}
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#'):
-                key, value = line.split('=', 1)
+            if line and not line.startswith("#"):
+                key, value = line.split("=", 1)
                 key = key.strip()
                 value = value.strip()
                 if value.isdigit():
                     value = int(value)
-                elif value.replace('.', '', 1).isdigit():
+                elif value.replace(".", "", 1).isdigit():
                     value = float(value)
-                elif value.lower() == 'true':
+                elif value.lower() == "true":
                     value = True
-                elif value.lower() == 'false':
+                elif value.lower() == "false":
                     value = False
                 config[key] = value
     return config
 
 
-def write_config_file(file_path, config):
-    with open(file_path, 'w') as f:
+def write_config_file(file_path: os.PathLike, config: Dict[str, Any]):
+    """Write a minetest config file.
+
+    Args:
+        file_path: Write path for minetest config.
+        config: Dictionary representing minetest config.
+
+    """
+    with open(file_path, "w") as f:
         for key, value in config.items():
-            f.write(f'{key} = {value}\n')
+            f.write(f"{key} = {value}\n")

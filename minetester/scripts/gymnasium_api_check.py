@@ -1,6 +1,8 @@
-import minetester
+"""Gymnasium API checker for Minetest environment."""
 import gymnasium as gym
 from gymnasium.utils.env_checker import check_env
+
+import minetester  # noqa: F401
 
 env = gym.make("Minetest-v0")
 

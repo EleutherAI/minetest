@@ -1,0 +1,1 @@
+"""Protobuf package for Minetester."""

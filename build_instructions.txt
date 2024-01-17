@@ -1,46 +1,20 @@
-1. Install prereqs
-  1. sudo apt-get install xvfb g++ make libzmq3-dev libtool pkg-config build-essential autoconf automake libc6-dev cmake libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev libcurl4-gnutls-dev libfreetype6-dev zlib1g-dev libgmp-dev libjsoncpp-dev libzstd-dev libluajit-5.1-dev protobuf-compiler
-
-2. Build SDL2
-  1. clone the SDL2 repo https://github.com/libsdl-org/SDL
-  2. checkout release-2.26.2 https://github.com/libsdl-org/SDL/tree/release-2.26.2
-  3. create a build directory inside the SDL repo
-  4. cd into it and run ../configure --prefix=/path/to/SDL/dir/build && make && make install
-
-3. Build zmqpp
-  1. clone https://github.com/zeromq/zmqpp
-  2. checkout the develop branch
-  3. run make
-
-4. Clone EAI alignment minetest repos
-  1. clone https://github.com/EleutherAI/minetest
-  2. checkout the develop branch
-  3. clone https://github.com/EleutherAI/irrlicht
-  4. checkout headless-renderer
-
-5. Clone minetest game spec
-  1. clone https://github.com/minetest/minetest_game
-  2. checkout master branch
-
-5. Establish symlinks
-  1. cd into minetest/lib
-  2. rm -r zmqpp irrlichtmt
-  3. ln -s ../../zmqpp/ zmqpp
-  4. ln -s ../../irrlicht/ irrlichtmt
-  5. cd into minetest/games
-  6. ln -s ../../minetest_game/ minetest_game
-
-6. Build minetest
-  1. cd into minetest
-  2. either run
-     cmake . -DRUN_IN_PLACE=TRUE -DBUILD_HEADLESS=1 -DSDL2_DIR=<path to SDL repo>/SDL/build/lib/cmake/SDL2/
-     or
-     cmake . -DRUN_IN_PLACE=TRUE -DBUILD_HEADLESS=0 -DSDL2_DIR=
-  3. run make -j$(nproc)
-
-7. setup python
-  1. create and activate a new python conda env or venv (tested with python3.9)
-  2. pip install gym matplotlib protobuf==3.20.1 psutil zmq -e ./minetest
-  3. cd into the scripts directory and run compile_proto.sh
-  4. run python -m minetester.scripts.test_loop
-
+# 1. Install debian dependencies, equivalent commands are nessesary for other distros
+make deb_deps
+# 2. Install build dependencies into the local python environment (we reccomend using a venv)
+make python_build_deps
+# 3. Init submodules
+make repos
+# 4. Build sdl2
+make sdl2
+# 5. Build zmqpp
+make zmqpp
+# 6. Create c++ and python protobuf files
+make proto
+# 7. Build minetest binary
+make minetest
+# 8. Build minetester python library
+make minetester
+# 9. Install minetester into local environment along with necessary dependencies
+make install
+# 10. Run the demo script
+make demo

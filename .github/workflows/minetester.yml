@@ -1,0 +1,51 @@
+name: Build and test Minetester
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Linux dependencies
+      run: make linux_deps
+    - name: Install build dependencies
+      run: make python_build_deps
+    - name: Init submodules
+      run: make repos
+    - name: Build SDL2
+      run: make sdl2
+    - name: Build zmqpp
+      run: make zmqpp
+    - name: Create Protobuf files
+      run: make proto
+    - name: Build irrlicht
+      run: bash util/minetester/build_irrlicht.sh
+    - name: Build minetest binary
+      run: make minetest
+    - name: Build minetester wheel
+      run: make minetester
+    - name:  Install minetester along with dependencies
+      run: |
+        python -m pip install --upgrade pip
+        make install
+    - name: Run pre-commit hooks
+      run: |
+        pip install pre-commit
+        pre-commit install
+        pre-commit run --all-files

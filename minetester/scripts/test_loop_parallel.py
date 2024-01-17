@@ -1,14 +1,16 @@
-import random
-from typing import Any, Dict, Optional
-
-from gymnasium.wrappers import TimeLimit
-from gymnasium.vector import AsyncVectorEnv
-from minetester import Minetest
-from minetester.utils import start_xserver
+"""Test loop with parallel Minetest environments."""
 
 if __name__ == "__main__":
+    import random
+    from typing import Any, Dict, Optional
 
-    def make_env(
+    from gymnasium.vector import AsyncVectorEnv
+    from gymnasium.wrappers import TimeLimit
+
+    from minetester import Minetest
+    from minetester.utils import start_xserver
+
+    def _make_env(
         rank: int,
         seed: int = 0,
         max_steps: int = 1e9,
@@ -27,7 +29,10 @@ if __name__ == "__main__":
                 **env_kwargs,
             )
             # Assign random timelimit to check that resets work properly
-            env = TimeLimit(env, max_episode_steps=random.randint(max_steps // 2, max_steps))
+            env = TimeLimit(
+                env,
+                max_episode_steps=random.randint(max_steps // 2, max_steps),
+            )
             return env
 
         return _init
@@ -48,7 +53,7 @@ if __name__ == "__main__":
     vec_env_cls = AsyncVectorEnv
     venv = vec_env_cls(
         [
-            make_env(rank=i, seed=seed, max_steps=max_steps, env_kwargs=env_kwargs)
+            _make_env(rank=i, seed=seed, max_steps=max_steps, env_kwargs=env_kwargs)
             for i in range(num_envs)
         ],
     )

@@ -350,6 +350,8 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 	if (cmd_args.exists("cursor-image"))
 		start_data.cursor_image_path = cmd_args.get("cursor-image");
+	else
+		start_data.cursor_image_path = "";
 
 	if (dumb && cmd_args.exists("sync-port"))
 		start_data.sync_port = cmd_args.get("sync-port");
