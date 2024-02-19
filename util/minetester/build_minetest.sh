@@ -21,4 +21,6 @@ cd build/normal
 cmake ../.. -DRUN_IN_PLACE=TRUE -DBUILD_HEADLESS=0 -DSDL2_DIR=
 make -j$(( $(nproc) > 1 ? $(nproc) - 1 : 1 )) #use max(nproc - 1,1) threads
 
+cd ../..
+
 

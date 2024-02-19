@@ -905,7 +905,7 @@ private:
 	zmqpp::socket* sync_socket = nullptr;
 
 	// cursor image used in Gui recording
-	irr::video::IImage* cursorImage;
+	irr::video::IImage* cursorImage = nullptr;
 
 	// custom dtime
 	f32 custom_dtime = 0;
@@ -1227,7 +1227,7 @@ bool Game::startup(bool *kill,
 		if (start_data.isDumbClient()) {
 			dynamic_cast<DumbClientInputHandler*>(input)->socket = data_socket;
 		}
-		if (start_data.isRecording())  {
+		if (start_data.isRecording() || start_data.isDumbClient())  {
 			createRecorder(start_data);
 			recorder->sender = data_socket;
 		}
